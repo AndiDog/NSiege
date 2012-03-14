@@ -1,0 +1,1 @@
+@"%ProgramFiles(x86)%\StyleCop 4.6\StyleCopSettingsEditor.exe" Settings.StyleCop
