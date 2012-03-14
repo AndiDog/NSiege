@@ -4,6 +4,19 @@ namespace NSiege
 {
     public class BenchmarkResult
     {
+        public TimeSpan AverageTimePerExecution
+        {
+            get
+            {
+                long ticksSum = 0;
+
+                foreach(var threadResult in ThreadResults)
+                    ticksSum += threadResult.CompleteElapsedTime.Ticks;
+
+                return new TimeSpan(ticksSum / CompletedExecutions);
+            }
+        }
+
         /// <summary>
         /// Optional name for the benchmark.
         /// </summary>

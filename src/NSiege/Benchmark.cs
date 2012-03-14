@@ -148,6 +148,7 @@ namespace NSiege
                 Console.WriteLine("  {0:#.##} executions/{1}",
                                   executionsPerPeriodSum,
                                   periodForPerformanceDisplay.Name);
+                Console.WriteLine("  One execution took {0} in average", result.AverageTimePerExecution);
 
                 // If executions/second > 100000
                 if((executionsPerPeriodSum * periodForPerformanceDisplay.Duration.TotalSeconds) > 100000)
