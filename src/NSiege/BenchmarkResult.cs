@@ -2,6 +2,9 @@
 
 namespace NSiege
 {
+    /// <summary>
+    /// Self-contained result of a benchmark run.
+    /// </summary>
     public class BenchmarkResult
     {
         /// <summary>

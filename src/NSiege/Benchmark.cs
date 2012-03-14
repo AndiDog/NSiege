@@ -64,7 +64,7 @@ namespace NSiege
             }
         }
 
-        public virtual void PrintResultDetails(BenchmarkResult result, bool printThreadResults = false, bool useColors = false, TimePeriod periodForPerformanceDisplay = null, bool debug = false)
+        public static void PrintResultDetails(BenchmarkResult result, bool printThreadResults = false, bool useColors = false, TimePeriod periodForPerformanceDisplay = null, bool debug = false)
         {
             if(periodForPerformanceDisplay == null)
                 periodForPerformanceDisplay = TimePeriod.Second;
