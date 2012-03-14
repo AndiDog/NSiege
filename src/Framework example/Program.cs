@@ -17,7 +17,7 @@ namespace NSiege.FrameworkExample
             benchmark.PrintBenchmarkDetails(useColors: true, debug: true);
             Console.WriteLine();
 
-            var result = benchmark.RunTest(Test, "Example result");
+            var result = benchmark.RunBenchmark(Test, resultName: "Example result");
 
             Console.WriteLine("Printing results in full mode:");
             benchmark.PrintResultDetails(result, printThreadResults: true, useColors: true, debug: true);

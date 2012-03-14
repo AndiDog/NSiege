@@ -2,6 +2,8 @@
 {
     public enum ThreadStopReason
     {
+        ExecutionConditionFalse,
+
         MaxNumberOfExecutionsExceeded,
 
         MaxTimeToRunExceeded,

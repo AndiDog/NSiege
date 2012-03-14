@@ -185,8 +185,28 @@ namespace NSiege
                 Console.WriteLine("- Stopping after {0}", Settings.MaxTimeToRun.Value);
         }
 
-        public virtual BenchmarkResult RunTest(Action test, string resultName = null)
+        /// <summary>
+        /// Runs the benchmark.
+        /// </summary>
+        /// <param name="test">
+        /// Callback function that executes the test once.
+        /// </param>
+        /// <param name="executionCondition">
+        /// Optional callback function that defines whether the test is executed another time. You can use this if you
+        /// have a shared state between test runs, e.g. a fixed-size list of inputs and each of them must be only used
+        /// once.
+        /// </param>
+        /// <param name="resultName">
+        /// Optional name you want to assign to the result, e.g. "Run with 10 concurrent threads".
+        /// </param>
+        /// <returns>
+        /// Benchmark results.
+        /// </returns>
+        public virtual BenchmarkResult RunBenchmark(Action test, Func<bool> executionCondition = null, string resultName = null)
         {
+            if(test == null)
+                throw new ArgumentNullException("test");
+
             EnsureCorrectSettings();
 
             var timer = TimerFactory.Create();
@@ -207,7 +227,7 @@ namespace NSiege
             for(int i = 0; i < concurrency; ++i)
             {
                 result.ThreadResults[i] = new ThreadResult();
-                threads[i] = new ThreadRunner(result.ThreadResults[i], Settings, sharedState, test, TimerFactory);
+                threads[i] = new ThreadRunner(executionCondition, result.ThreadResults[i], Settings, sharedState, test, TimerFactory);
             }
 
             // Start the actual benchmark in background thread(s)

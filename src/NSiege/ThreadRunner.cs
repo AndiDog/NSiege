@@ -5,6 +5,8 @@ namespace NSiege
 {
     public class ThreadRunner
     {
+        public Func<bool> ExecutionCondition { get; protected set; }
+
         public ThreadResult Result { get; protected set; }
 
         public TimingSettings Settings { get; protected set; }
@@ -17,8 +19,9 @@ namespace NSiege
 
         protected ITimer Timer { get; private set; }
 
-        public ThreadRunner(ThreadResult result, TimingSettings settings, BenchmarkState sharedState, Action test, ITimerFactory timerFactory)
+        public ThreadRunner(Func<bool> executionCondition, ThreadResult result, TimingSettings settings, BenchmarkState sharedState, Action test, ITimerFactory timerFactory)
         {
+            this.ExecutionCondition = executionCondition;
             this.Result = result;
             this.Settings = settings;
             this.SharedState = sharedState;
@@ -37,12 +40,20 @@ namespace NSiege
 
         public virtual void Run()
         {
+            var executionCondition = ExecutionCondition;
             var result = Result;
             var settings = Settings;
             var sharedState = SharedState;
 
             while(true)
             {
+                if(executionCondition != null && !executionCondition())
+                {
+                    result.StopReason = ThreadStopReason.ExecutionConditionFalse;
+
+                    break;
+                }
+
                 if(settings.MaxNumberOfExecutionsToRun != null &&
                    SharedState.CompletedExecutions >= settings.MaxNumberOfExecutionsToRun.Value)
                 {
