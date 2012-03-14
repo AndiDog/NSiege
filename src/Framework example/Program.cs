@@ -38,7 +38,7 @@ namespace Framework_example
 
         public static void Test()
         {
-            Thread.Sleep((Thread.CurrentThread.ManagedThreadId % 3 * 100) + 100);
+            Thread.Sleep(((Thread.CurrentThread.ManagedThreadId % 3) * 100) + 100);
         }
     }
 }
