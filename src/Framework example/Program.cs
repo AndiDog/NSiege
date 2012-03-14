@@ -39,6 +39,11 @@ namespace Framework_example
         public static void Test()
         {
             Thread.Sleep(((Thread.CurrentThread.ManagedThreadId % 3) * 100) + 100);
+
+            // Or try a web request
+            /*var request = WebRequest.Create("http://localhost/");
+            var response = request.GetResponse();
+            response.Close();*/
         }
     }
 }
