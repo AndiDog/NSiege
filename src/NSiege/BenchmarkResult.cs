@@ -16,6 +16,24 @@ namespace NSiege
 
         public int CompletedExecutions { get; set; }
 
+        private double? executionsPerSecond;
+
+        public double ExecutionsPerSecond
+        {
+            get
+            {
+                if(executionsPerSecond != null)
+                    return executionsPerSecond.Value;
+
+                executionsPerSecond = 0;
+
+                foreach(var threadResult in ThreadResults)
+                    executionsPerSecond += ((double)threadResult.CompletedExecutions) / threadResult.CompleteElapsedTime.TotalSeconds;
+
+                return executionsPerSecond.Value;
+            }
+        }
+
         /// <summary>
         /// Optional name for the benchmark result.
         /// </summary>

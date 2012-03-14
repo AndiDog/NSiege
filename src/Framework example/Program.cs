@@ -26,8 +26,12 @@ namespace Framework_example
 
             Console.WriteLine("Printing results without the details:");
             benchmark.PrintResultDetails(result, useColors: true, debug: false);
-
             Console.WriteLine();
+
+            Console.WriteLine("Results from properties:");
+            Console.WriteLine("- {0:#.##} executions/second", result.ExecutionsPerSecond);
+            Console.WriteLine();
+
             Console.WriteLine("Finished. Press a key...");
             Console.ReadKey();
         }
