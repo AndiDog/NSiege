@@ -4,6 +4,10 @@ namespace NSiege
 {
     public class BenchmarkResult
     {
+        /// <summary>
+        /// Average time to execute the test once. In case the test was not executed at all, this is
+        /// <c>TimeSpan.Zero</c>.
+        /// </summary>
         public TimeSpan AverageTimePerExecution
         {
             get
@@ -13,7 +17,7 @@ namespace NSiege
                 foreach(var threadResult in ThreadResults)
                     ticksSum += threadResult.CompleteElapsedTime.Ticks;
 
-                return new TimeSpan(ticksSum / CompletedExecutions);
+                return CompletedExecutions == 0 ? TimeSpan.Zero : new TimeSpan(ticksSum / CompletedExecutions);
             }
         }
 
