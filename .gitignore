@@ -1,0 +1,5 @@
+*.gitignore.*
+*.suo
+src/*/bin
+src/*/obj
+StyleCop.Cache
