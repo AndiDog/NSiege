@@ -15,16 +15,26 @@ namespace Framework_example
                                           },
                                           "Example benchmark");
 
-            var result = benchmark.RunTest(Test, "Example result");
-            benchmark.PrintResult(result, useColors: true);
+            benchmark.PrintBenchmarkDetails(useColors: true, debug: true);
+            Console.WriteLine();
 
+            var result = benchmark.RunTest(Test, "Example result");
+
+            Console.WriteLine("Printing results in full mode:");
+            benchmark.PrintResultDetails(result, printThreadResults: true, useColors: true, debug: true);
+            Console.WriteLine();
+
+            Console.WriteLine("Printing results without the details:");
+            benchmark.PrintResultDetails(result, useColors: true, debug: false);
+
+            Console.WriteLine();
             Console.WriteLine("Finished. Press a key...");
             Console.ReadKey();
         }
 
         public static void Test()
         {
-            Thread.Sleep(150);
+            Thread.Sleep(Thread.CurrentThread.ManagedThreadId % 3 * 100 + 100);
         }
     }
 }

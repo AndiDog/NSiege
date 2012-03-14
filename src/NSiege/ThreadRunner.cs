@@ -47,11 +47,19 @@ namespace NSiege
             {
                 if(settings.MaxNumberOfExecutionsToRun != null &&
                    SharedState.CompletedExecutions >= settings.MaxNumberOfExecutionsToRun.Value)
+                {
+                    result.StopReason = ThreadStopReason.MaxNumberOfExecutionsExceeded;
+
                     break;
+                }
 
                 if(settings.MaxTimeToRun != null &&
                    SharedState.TimerFromBeginning.Elapsed >= settings.MaxTimeToRun.Value)
+                {
+                    result.StopReason = ThreadStopReason.MaxTimeToRunExceeded;
+
                     break;
+                }
 
                 Test();
 
@@ -62,12 +70,20 @@ namespace NSiege
                 if(settings.NumberOfExecutionsToRun != null)
                 {
                     if(completedExecutionsOverall >= settings.NumberOfExecutionsToRun.Value)
+                    {
+                        result.StopReason = ThreadStopReason.NumberOfExecutionsExceeded;
+
                         break;
+                    }
                 }
                 else if(settings.TimeToRun != null)
                 {
                     if(sharedState.TimerFromBeginning.Elapsed >= settings.TimeToRun.Value)
+                    {
+                        result.StopReason = ThreadStopReason.TimeToRunExceeded;
+
                         break;
+                    }
                 }
                 else
                     throw new InvalidSettingsException("Expected NumberOfExecutionsToRun or TimeToRun to be defined");

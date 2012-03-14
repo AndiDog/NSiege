@@ -41,14 +41,16 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Benchmark.cs" />
-    <Compile Include="BenchmarkResults.cs" />
+    <Compile Include="BenchmarkResult.cs" />
     <Compile Include="BenchmarkState.cs" />
     <Compile Include="InvalidSettingsException.cs" />
     <Compile Include="ITimer.cs" />
     <Compile Include="NSiegeException.cs" />
     <Compile Include="StopwatchTimer.cs" />
-    <Compile Include="ThreadResults.cs" />
+    <Compile Include="ThreadResult.cs" />
     <Compile Include="ThreadRunner.cs" />
+    <Compile Include="ThreadStopReason.cs" />
+    <Compile Include="TimePeriod.cs" />
     <Compile Include="TimingSettings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

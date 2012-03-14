@@ -14,6 +14,8 @@ namespace NSiege
         /// </summary>
         public TimeSpan CompleteElapsedTime { get; set; }
 
+        public int CompletedExecutions { get; set; }
+
         /// <summary>
         /// Optional name for the benchmark result.
         /// </summary>
