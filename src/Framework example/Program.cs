@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Threading;
-using NSiege;
 
-namespace Framework_example
+namespace NSiege.FrameworkExample
 {
     public class Program
     {
