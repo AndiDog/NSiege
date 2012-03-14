@@ -37,8 +37,6 @@ namespace NSiege
 
         public virtual void Run()
         {
-            Timer.Start();
-
             var result = Result;
             var settings = Settings;
             var sharedState = SharedState;
@@ -61,7 +59,11 @@ namespace NSiege
                     break;
                 }
 
+                Timer.Start();
+
                 Test();
+
+                Timer.Stop();
 
                 ++result.CompletedExecutions;
 
@@ -88,8 +90,6 @@ namespace NSiege
                 else
                     throw new InvalidSettingsException("Expected NumberOfExecutionsToRun or TimeToRun to be defined");
             }
-
-            Timer.Stop();
 
             var elapsed = Timer.Elapsed;
             result.CompleteElapsedTime = elapsed;
