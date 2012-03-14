@@ -146,7 +146,7 @@ namespace NSiege
                 Console.WriteLine("  Took {0} in average", averageTimeTaken);
                 Console.WriteLine("  Executed {0} times altogether", result.CompletedExecutions);
                 Console.WriteLine("  {0:#.##} executions/{1}",
-                                  executionsPerPeriodPerThread.Sum(),
+                                  executionsPerPeriodSum,
                                   periodForPerformanceDisplay.Name);
 
                 // If executions/second > 100000
