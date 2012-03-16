@@ -4,6 +4,14 @@ namespace NSiege
 {
     public class TimingSettings
     {
+        /// <summary>
+        /// Whether exceptions during execution of the test function should be caught. Defaults to false. If true,
+        /// <see cref="BenchmarkResult.Exception"/> will be set to the exception instance (of the first erroneous
+        /// execution thread) and the relevant execution thread stops (with <see cref="ThreadResult.StopReason"/> set
+        /// to <see cref="ThreadStopReason.Exception"/>).
+        /// </summary>
+        public bool CatchTestExceptions { get; set; }
+
         private uint concurrency = 1;
 
         /// <summary>

@@ -39,6 +39,8 @@ namespace NSiege
 
         public int CompletedExecutions { get; set; }
 
+        public Exception Exception { get; set; }
+
         private double? executionsPerSecond;
 
         public double ExecutionsPerSecond
@@ -57,6 +59,14 @@ namespace NSiege
                     }
 
                 return executionsPerSecond.Value;
+            }
+        }
+
+        public bool HasErrors
+        {
+            get
+            {
+                return Exception != null;
             }
         }
 

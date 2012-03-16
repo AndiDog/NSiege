@@ -22,6 +22,8 @@ namespace NSiege
 
         public int CompletedExecutions { get; set; }
 
+        public Exception Exception { get; set; }
+
         public ThreadStopReason StopReason { get; set; }
 
         public ThreadResult()

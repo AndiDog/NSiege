@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 
 namespace NSiege.FrameworkExample
@@ -9,6 +10,7 @@ namespace NSiege.FrameworkExample
         {
             var benchmark = new Benchmark(new TimingSettings
                                           {
+                                              CatchTestExceptions = true,
                                               Concurrency = 3,
                                               TimeToRun = new TimeSpan(0, 0, 4)
                                           },
@@ -18,6 +20,7 @@ namespace NSiege.FrameworkExample
             Console.WriteLine();
 
             var result = benchmark.RunBenchmark(Test, resultName: "Example result");
+            Debug.Assert(!result.HasErrors);
 
             Console.WriteLine("Printing results in full mode:");
             Benchmark.PrintResultDetails(result, printThreadResults: true, useColors: true, debug: true);

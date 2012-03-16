@@ -72,7 +72,24 @@ namespace NSiege
 
                 Timer.Start();
 
-                Test();
+                try
+                {
+                    Test();
+                }
+                catch(Exception e)
+                {
+                    Timer.Stop();
+
+                    if(settings.CatchTestExceptions)
+                    {
+                        result.Exception = e;
+                        result.StopReason = ThreadStopReason.Exception;
+
+                        break;
+                    }
+                    else
+                        throw;
+                }
 
                 Timer.Stop();
 

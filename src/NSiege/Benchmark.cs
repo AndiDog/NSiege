@@ -124,11 +124,34 @@ namespace NSiege
 
                         if(debug)
                             Console.WriteLine("  Stop reason {0}", result.ThreadResults[i].StopReason);
+
+                        if(result.ThreadResults[i].StopReason == ThreadStopReason.Exception)
+                        {
+                            if(useColors)
+                                Console.ForegroundColor = ConsoleColor.Red;
+
+                            Console.WriteLine("  Test execution led to an exception in this thread:");
+                            Console.WriteLine("    {0}", result.ThreadResults[i].Exception.Message);
+
+                            if(useColors)
+                                Console.ForegroundColor = foregroundColor;
+                        }
                     }
 
                     completedExecutionsSum += result.ThreadResults[i].CompletedExecutions;
                     elapsedTimeSum += result.ThreadResults[i].CompleteElapsedTime;
                     executionsPerPeriodPerThread[i] = executionsPerPeriod;
+                }
+
+                if(result.HasErrors)
+                {
+                    if(useColors)
+                        Console.ForegroundColor = ConsoleColor.Red;
+
+                    Console.WriteLine("Test execution led to an exception in at least one thread:");
+                    Console.WriteLine("  {0}", result.Exception);
+
+                    return;
                 }
 
                 Debug.Assert(completedExecutionsSum == result.CompletedExecutions);
@@ -187,7 +210,11 @@ namespace NSiege
         }
 
         /// <summary>
-        /// Runs the benchmark.
+        /// Runs the benchmark. Does not throw exceptions in case the test function throws one - if
+        /// <see cref="TimingSettings.CatchTestExceptions"/> is false, the execution thread will rethrow the exception.
+        /// This method sets <see cref="BenchmarkResult.HasErrors"/> to true in case of an exception, so if you have
+        /// set <see cref="TimingSettings.CatchTestExceptions"/> to true, check <see cref="BenchmarkResult.HasErrors"/>
+        /// afterwards.
         /// </summary>
         /// <param name="test">
         /// Callback function that executes the test once.
@@ -244,6 +271,14 @@ namespace NSiege
             sharedState.TimerFromBeginning.Stop();
 
             timer.Stop();
+
+            // Propagate exception if any (BenchmarkResult.Exception only set to the first one)
+            foreach(var threadResult in result.ThreadResults)
+                if(threadResult.StopReason == ThreadStopReason.Exception)
+                {
+                    result.Exception = threadResult.Exception;
+                    break;
+                }
 
             var elapsed = timer.Elapsed;
 
