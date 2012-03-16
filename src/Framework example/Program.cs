@@ -32,6 +32,7 @@ namespace NSiege.FrameworkExample
 
             Console.WriteLine("Results from properties:");
             Console.WriteLine("- {0:#.##} executions/second", result.ExecutionsPerSecond);
+            Console.WriteLine("- One execution took {0} in average", result.AverageTimePerExecution);
             Console.WriteLine();
 
             Console.WriteLine("Finished. Press a key...");
