@@ -5,10 +5,19 @@ namespace NSiege
     public class ThreadResult
     {
         /// <summary>
-        /// Time that the thread runner took for running the test in this thread. Note that in case a maximum time is
-        /// used in the settings, this might actually be lower than the maximum because the overall timer starts before
-        /// a thread's timer.
+        /// Average time to execute the test once. In case the test was not executed at all, this is
+        /// <c>TimeSpan.Zero</c>.
         /// </summary>
+        public TimeSpan AverageTimePerExecution
+        {
+            get
+            {
+                return CompletedExecutions == 0
+                       ? TimeSpan.Zero
+                       : new TimeSpan(CompleteElapsedTime.Ticks / CompletedExecutions);
+            }
+        }
+
         public TimeSpan CompleteElapsedTime { get; set; }
 
         public int CompletedExecutions { get; set; }

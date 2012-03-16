@@ -120,6 +120,7 @@ namespace NSiege
                         Console.WriteLine("  {0:#.##} executions/{1}",
                                           executionsPerPeriod,
                                           periodForPerformanceDisplay.Name);
+                        Console.WriteLine("  One execution took {0} in average", result.ThreadResults[i].AverageTimePerExecution);
 
                         if(debug)
                             Console.WriteLine("  Stop reason {0}", result.ThreadResults[i].StopReason);
