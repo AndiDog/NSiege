@@ -18,7 +18,10 @@ namespace NSiege
                 long ticksSum = 0;
 
                 foreach(var threadResult in ThreadResults)
-                    ticksSum += threadResult.CompleteElapsedTime.Ticks;
+                    checked
+                    {
+                        ticksSum += threadResult.CompleteElapsedTime.Ticks;
+                    }
 
                 return CompletedExecutions == 0 ? TimeSpan.Zero : new TimeSpan(ticksSum / CompletedExecutions);
             }
@@ -48,7 +51,10 @@ namespace NSiege
                 executionsPerSecond = 0;
 
                 foreach(var threadResult in ThreadResults)
-                    executionsPerSecond += ((double)threadResult.CompletedExecutions) / threadResult.CompleteElapsedTime.TotalSeconds;
+                    checked
+                    {
+                        executionsPerSecond += ((double)threadResult.CompletedExecutions) / threadResult.CompleteElapsedTime.TotalSeconds;
+                    }
 
                 return executionsPerSecond.Value;
             }
