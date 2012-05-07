@@ -167,7 +167,7 @@ namespace NSiege
                 var averageTimeTaken = new TimeSpan(elapsedTimeSum.Ticks / result.ThreadResults.Length);
                 var executionsPerPeriodSum = executionsPerPeriodPerThread.Sum();
 
-                Console.WriteLine("  Took {0} in average", averageTimeTaken);
+                Console.WriteLine("  Each thread took {0} in average", averageTimeTaken);
                 Console.WriteLine("  Executed {0} times altogether", result.CompletedExecutions);
                 Console.WriteLine("  {0:#.##} executions/{1}",
                                   executionsPerPeriodSum,
