@@ -10,6 +10,7 @@ namespace NSiege
         /// execution thread) and the relevant execution thread stops (with <see cref="ThreadResult.StopReason"/> set
         /// to <see cref="ThreadStopReason.Exception"/>).
         /// </summary>
+        [Obsolete("Use ExceptionMode instead", error: true)]
         public bool CatchTestExceptions { get; set; }
 
         private uint concurrency = 1;
@@ -22,6 +23,24 @@ namespace NSiege
         {
             get { return concurrency; }
             set { concurrency = value; }
+        }
+
+        /// <summary>
+        /// Use only if <c>ExceptionMode</c> is set to <see cref="NSiege.ExceptionMode.COUNT"/>. An exception will only
+        /// be counted if the <c>ExceptionCountCallback</c> returns true. If no callback is defined, all exceptions
+        /// will be counted. That is the default.
+        /// </summary>
+        public Func<Exception, bool> ExceptionCallback { get; set; }
+
+        private ExceptionMode exceptionMode = ExceptionMode.RETHROW;
+
+        /// <summary>
+        /// <see cref="NSiege.ExceptionMode"/>
+        /// </summary>
+        public ExceptionMode ExceptionMode
+        {
+            get { return exceptionMode; }
+            set { exceptionMode = value; }
         }
 
         /// <summary>
@@ -90,6 +109,9 @@ namespace NSiege
             // TimeToWaitBetweenTests and benchmarking mode
             if((TimeToWaitBetweenTests == null) == (Mode == BenchmarkMode.USER_SIMULATION))
                 throw new InvalidSettingsException("TimeToWaitBetweenTests and BenchmarkMode.BENCHMARK are mutually exclusive, exactly one must be NULL");
+
+            if(ExceptionMode != ExceptionMode.COUNT && ExceptionCallback != null)
+                throw new InvalidSettingsException("ExceptionCallback can only be used with ExceptionMode.COUNT");
 
             // Values:
 

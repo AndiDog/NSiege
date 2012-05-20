@@ -21,7 +21,7 @@ namespace NSiege
             this.Settings = settings;
         }
 
-        public static double CalculateExecutionsPerPeriod(int completedExecutions, TimeSpan elapsedTime, TimePeriod period)
+        public static double CalculateExecutionsPerPeriod(uint completedExecutions, TimeSpan elapsedTime, TimePeriod period)
         {
             return ((double)completedExecutions) * period.Duration.TotalMilliseconds / elapsedTime.TotalMilliseconds;
         }
@@ -35,6 +35,11 @@ namespace NSiege
                 TimerFactory = new StopwatchTimerFactory();
 
             Settings.EnsureCorrectSettings();
+        }
+
+        protected static string FormatException(Exception e)
+        {
+            return string.Format("[{0}] {1}", e.GetType().Name, e.Message);
         }
 
         public virtual void PrintBenchmarkDetails(bool useColors = false, bool debug = false)
@@ -96,7 +101,7 @@ namespace NSiege
                         Console.ForegroundColor = foregroundColor;
                 }
 
-                int completedExecutionsSum = 0; // debugging only, see below
+                uint completedExecutionsSum = 0; // debugging only, see below
                 var elapsedTimeSum = TimeSpan.Zero;
                 var executionsPerPeriodPerThread = new double[result.ThreadResults.Length];
 
@@ -129,13 +134,26 @@ namespace NSiege
                         if(debug)
                             Console.WriteLine("  Stop reason {0}", result.ThreadResults[i].StopReason);
 
-                        if(result.ThreadResults[i].StopReason == ThreadStopReason.Exception)
+                        if(result.ThreadResults[i].FirstUncountedException != null ||
+                           (result.ExceptionMode == ExceptionMode.COUNT &&
+                            result.ThreadResults[i].FirstCountedException != null))
                         {
                             if(useColors)
                                 Console.ForegroundColor = ConsoleColor.Red;
 
                             Console.WriteLine("  Test execution led to an exception in this thread:");
-                            Console.WriteLine("    {0}", result.ThreadResults[i].Exception.Message);
+
+                            if(result.ThreadResults[i].FirstUncountedException != null)
+                                Console.WriteLine("  first uncounted: {0}",
+                                                  FormatException(result.ThreadResults[i].FirstUncountedException));
+                            if(result.ExceptionMode == ExceptionMode.COUNT &&
+                               result.ThreadResults[i].FirstCountedException != null)
+                            {
+                                Console.WriteLine("  first counted: {0}",
+                                                  FormatException(result.ThreadResults[i].FirstCountedException));
+                                Console.WriteLine("  number of counted exceptions: {0}",
+                                                  result.ThreadResults[i].ExceptionCount);
+                            }
 
                             if(useColors)
                                 Console.ForegroundColor = foregroundColor;
@@ -153,7 +171,14 @@ namespace NSiege
                         Console.ForegroundColor = ConsoleColor.Red;
 
                     Console.WriteLine("Test execution led to an exception in at least one thread:");
-                    Console.WriteLine("  {0}", result.Exception);
+
+                    if(result.FirstUncountedException != null)
+                        Console.WriteLine("  first uncounted: {0}", FormatException(result.FirstUncountedException));
+                    if(result.ExceptionMode == ExceptionMode.COUNT && result.FirstCountedException != null)
+                    {
+                        Console.WriteLine("  first counted: {0}", FormatException(result.FirstCountedException));
+                        Console.WriteLine("  total number of counted exceptions: {0}", result.ExceptionCount);
+                    }
 
                     return;
                 }
@@ -250,6 +275,7 @@ namespace NSiege
             var result = new BenchmarkResult
             {
                 BenchmarkName = this.Name,
+                ExceptionMode = Settings.ExceptionMode,
                 Mode = Settings.Mode,
                 ResultName = resultName
             };
@@ -261,7 +287,7 @@ namespace NSiege
 
             for(int i = 0; i < concurrency; ++i)
             {
-                result.ThreadResults[i] = new ThreadResult();
+                result.ThreadResults[i] = new ThreadResult { ExceptionMode = Settings.ExceptionMode };
                 threads[i] = new ThreadRunner(executionCondition, result.ThreadResults[i], Settings, sharedState, test, TimerFactory);
             }
 
@@ -279,13 +305,21 @@ namespace NSiege
 
             timer.Stop();
 
-            // Propagate exception if any (BenchmarkResult.Exception only set to the first one)
+            // Propagate exceptions if any
             foreach(var threadResult in result.ThreadResults)
-                if(threadResult.StopReason == ThreadStopReason.Exception)
+                if(threadResult.FirstUncountedException != null)
                 {
-                    result.Exception = threadResult.Exception;
+                    result.FirstUncountedException = threadResult.FirstUncountedException;
                     break;
                 }
+
+            if(Settings.ExceptionMode == ExceptionMode.COUNT)
+                foreach(var threadResult in result.ThreadResults)
+                    if(threadResult.FirstCountedException != null)
+                    {
+                        result.FirstCountedException = threadResult.FirstCountedException;
+                        break;
+                    }
 
             var elapsed = timer.Elapsed;
 

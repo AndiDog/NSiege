@@ -90,15 +90,33 @@ namespace NSiege
                 {
                     Timer.Stop();
 
-                    if(settings.CatchTestExceptions)
+                    if(settings.ExceptionMode == ExceptionMode.COUNT)
                     {
-                        result.Exception = e;
+                        if(settings.ExceptionCallback == null || settings.ExceptionCallback(e))
+                        {
+                            ++result.ExceptionCount;
+
+                            if(result.FirstCountedException == null)
+                                result.FirstCountedException = e;
+                        }
+                        else
+                        {
+                            if(result.FirstUncountedException == null)
+                                result.FirstUncountedException = e;
+                        }
+                    }
+                    else if(settings.ExceptionMode == ExceptionMode.IGNORE_AND_STOP)
+                    {
+                        result.FirstUncountedException = e;
+
                         result.StopReason = ThreadStopReason.Exception;
 
                         break;
                     }
-                    else
+                    else if(settings.ExceptionMode == ExceptionMode.RETHROW)
                         throw;
+                    else
+                        throw new InvalidSettingsException("Invalid ExceptionMode");
                 }
 
                 Timer.Stop();

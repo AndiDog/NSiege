@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Threading;
 
 namespace NSiege.FrameworkExample
@@ -11,18 +10,18 @@ namespace NSiege.FrameworkExample
             // Example 1: Benchmark mode
             var benchmark1 = new Benchmark(new TimingSettings
                                            {
-                                               CatchTestExceptions = true,
+                                               ExceptionMode = ExceptionMode.IGNORE_AND_STOP,
                                                Concurrency = 3,
                                                TimeToRun = new TimeSpan(0, 0, 4)
                                            },
                                            "Example benchmark");
             Print("-- Example benchmark in benchmarking mode --", ConsoleColor.Blue);
-            RunExample(benchmark1);
+            RunExample(benchmark1, Test);
 
             // Example 2: User simulation mode
             var settings2 = new TimingSettings
             {
-                CatchTestExceptions = true,
+                ExceptionMode = ExceptionMode.COUNT,
                 Concurrency = 3,
                 Mode = BenchmarkMode.USER_SIMULATION,
                 TimeToRun = new TimeSpan(0, 0, 4)
@@ -32,7 +31,22 @@ namespace NSiege.FrameworkExample
             var benchmark2 = new Benchmark(settings2,
                                            "Example user simulation");
             Print("-- Example benchmark in user simulation mode --", ConsoleColor.Blue);
-            RunExample(benchmark2);
+            RunExample(benchmark2, Test);
+
+            // Example 3: Exception counting
+            var settings3 = new TimingSettings
+            {
+                ExceptionCallback = e => e is InvalidTimeZoneException,
+                ExceptionMode = ExceptionMode.COUNT,
+                Concurrency = 10,
+                Mode = BenchmarkMode.BENCHMARK,
+                NumberOfExecutionsToRun = 100,
+            };
+
+            var benchmark3 = new Benchmark(settings3,
+                                           "Example with exception counting");
+            Print("-- Example benchmark with exception counting --", ConsoleColor.Blue);
+            RunExample(benchmark3, TestWithExceptions);
 
             Console.WriteLine("Finished. Press a key...");
             Console.ReadKey();
@@ -53,13 +67,12 @@ namespace NSiege.FrameworkExample
             }
         }
 
-        public static void RunExample(Benchmark benchmark)
+        public static void RunExample(Benchmark benchmark, Action test)
         {
             benchmark.PrintBenchmarkDetails(useColors: true, debug: true);
             Console.WriteLine();
 
-            var result = benchmark.RunBenchmark(Test, resultName: "Example result");
-            Debug.Assert(!result.HasErrors);
+            var result = benchmark.RunBenchmark(test, resultName: "Example result");
 
             Console.WriteLine("Printing results in full mode:");
             Benchmark.PrintResultDetails(result, printThreadResults: true, useColors: true, debug: true);
@@ -85,6 +98,17 @@ namespace NSiege.FrameworkExample
             request.UserAgent = "ApacheBench/2.0";
             var response = request.GetResponse();
             response.Close();*/
+        }
+
+        public static void TestWithExceptions()
+        {
+            if(Thread.CurrentThread.ManagedThreadId % 3 == 0)
+                throw new InvalidTimeZoneException("This should be counted");
+
+            if(Thread.CurrentThread.ManagedThreadId % 8 == 0)
+                throw new InvalidOperationException("This should NOT be counted");
+
+            Thread.Sleep(5);
         }
     }
 }

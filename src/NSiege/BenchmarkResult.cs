@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace NSiege
 {
@@ -39,7 +40,28 @@ namespace NSiege
 
         public int CompletedExecutions { get; set; }
 
+        [Obsolete("Use FirstCountedException or FirstUncountedException instead.", error: true)]
         public Exception Exception { get; set; }
+
+        /// <summary>
+        /// Number of counted exceptions. Only to be used with <see cref="NSiege.ExceptionMode.COUNT"/>.
+        /// </summary>
+        public uint ExceptionCount
+        {
+            get
+            {
+                if(ExceptionMode != ExceptionMode.COUNT)
+                    throw new InvalidOperationException("ExceptionCount property can only be used in " +
+                                                        "ExceptionMode.COUNT mode");
+
+                uint exceptionCount = 0;
+                foreach(var threadResult in ThreadResults)
+                    exceptionCount += threadResult.ExceptionCount;
+                return exceptionCount;
+            }
+        }
+
+        public ExceptionMode ExceptionMode { get; set; }
 
         private double? executionsPerSecond;
 
@@ -65,11 +87,42 @@ namespace NSiege
             }
         }
 
+        private Exception firstCountedException;
+
+        /// <summary>
+        /// If a counted exception occurred, this is the first one found in all thread results. Only to be used with
+        /// <see cref="NSiege.ExceptionMode.COUNT"/>
+        /// </summary>
+        public Exception FirstCountedException
+        {
+            get
+            {
+                if(ExceptionMode != ExceptionMode.COUNT)
+                    throw new InvalidOperationException("FirstCountedException can only be used with " +
+                                                        "ExceptionMode.COUNT");
+
+                return firstCountedException;
+            }
+
+            set
+            {
+                Debug.Assert(ExceptionMode == ExceptionMode.COUNT);
+
+                firstCountedException = value;
+            }
+        }
+
+        /// <summary>
+        /// If an uncounted exception occurred, this is the first one found in all thread results.
+        /// </summary>
+        public Exception FirstUncountedException { get; set; }
+
         public bool HasErrors
         {
             get
             {
-                return Exception != null;
+                return FirstUncountedException != null ||
+                       (ExceptionMode == ExceptionMode.COUNT && FirstCountedException != null);
             }
         }
 
