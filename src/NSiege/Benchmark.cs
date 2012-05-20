@@ -122,7 +122,7 @@ namespace NSiege
                                           executionsPerPeriod,
                                           periodForPerformanceDisplay.Name,
                                           result.Mode == BenchmarkMode.USER_SIMULATION
-                                              ? " (user simulation mode: waiting time not considered here)"
+                                              ? " (user simulation mode: waiting time not considered)"
                                               : string.Empty);
                         Console.WriteLine("  One execution took {0} in average", result.ThreadResults[i].AverageTimePerExecution);
 
