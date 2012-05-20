@@ -77,6 +77,7 @@ namespace NSiege
                     Console.ForegroundColor = ConsoleColor.Cyan;
 
                 Console.WriteLine("Result: {0}", result.ResultName ?? "<no name assigned>");
+                Console.WriteLine("Mode: {0}", result.Mode.ToFriendlyString());
 
                 if(useColors)
                     Console.ForegroundColor = foregroundColor;
@@ -117,9 +118,12 @@ namespace NSiege
 
                         Console.WriteLine("  Took {0}", result.ThreadResults[i].CompleteElapsedTime);
                         Console.WriteLine("  Executed {0} times", result.ThreadResults[i].CompletedExecutions);
-                        Console.WriteLine("  {0:#.##} executions/{1}",
+                        Console.WriteLine("  {0:#.##} executions/{1}{2}",
                                           executionsPerPeriod,
-                                          periodForPerformanceDisplay.Name);
+                                          periodForPerformanceDisplay.Name,
+                                          result.Mode == BenchmarkMode.USER_SIMULATION
+                                              ? " (user simulation mode: waiting time not considered here)"
+                                              : string.Empty);
                         Console.WriteLine("  One execution took {0} in average", result.ThreadResults[i].AverageTimePerExecution);
 
                         if(debug)
@@ -169,9 +173,10 @@ namespace NSiege
 
                 Console.WriteLine("  Each thread took {0} in average", averageTimeTaken);
                 Console.WriteLine("  Executed {0} times altogether", result.CompletedExecutions);
-                Console.WriteLine("  {0:#.##} executions/{1}",
-                                  executionsPerPeriodSum,
-                                  periodForPerformanceDisplay.Name);
+                if(result.Mode == BenchmarkMode.BENCHMARK)
+                    Console.WriteLine("  {0:#.##} executions/{1}",
+                                      executionsPerPeriodSum,
+                                      periodForPerformanceDisplay.Name);
                 Console.WriteLine("  One execution took {0} in average", result.AverageTimePerExecution);
 
                 // If executions/second > 100000
@@ -194,6 +199,7 @@ namespace NSiege
 
         protected virtual void PrintSettings()
         {
+            Console.WriteLine("- Mode: {0}", Settings.Mode.ToFriendlyString());
             Console.WriteLine("- Concurrency: {0}", Settings.Concurrency);
 
             if(Settings.NumberOfExecutionsToRun != null)
@@ -244,6 +250,7 @@ namespace NSiege
             var result = new BenchmarkResult
             {
                 BenchmarkName = this.Name,
+                Mode = Settings.Mode,
                 ResultName = resultName
             };
 

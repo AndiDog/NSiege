@@ -41,6 +41,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Benchmark.cs" />
+    <Compile Include="BenchmarkMode.cs" />
     <Compile Include="BenchmarkResult.cs" />
     <Compile Include="BenchmarkState.cs" />
     <Compile Include="InvalidSettingsException.cs" />

@@ -44,6 +44,16 @@ namespace NSiege
             var result = Result;
             var settings = Settings;
             var sharedState = SharedState;
+            Random rng = null;
+            double minWait = 0;
+            double maxWait = 0;
+
+            if(settings.Mode == BenchmarkMode.USER_SIMULATION)
+            {
+                rng = new Random();
+                minWait = settings.TimeToWaitBetweenTests.Item1.TotalMilliseconds;
+                maxWait = settings.TimeToWaitBetweenTests.Item2.TotalMilliseconds;
+            }
 
             while(true)
             {
@@ -117,6 +127,24 @@ namespace NSiege
                 }
                 else
                     throw new InvalidSettingsException("Expected NumberOfExecutionsToRun or TimeToRun to be defined");
+
+                if(settings.Mode == BenchmarkMode.USER_SIMULATION)
+                {
+                    var millisecondsToWait = minWait == maxWait
+                                             ? minWait
+                                             : (minWait + (rng.NextDouble() * (maxWait - minWait)));
+                    var toWait = TimeSpan.FromMilliseconds(millisecondsToWait);
+
+                    if(settings.MaxTimeToRun != null &&
+                       SharedState.TimerFromBeginning.Elapsed >= settings.MaxTimeToRun.Value - toWait)
+                    {
+                        result.StopReason = ThreadStopReason.MaxTimeToRunExceeded;
+
+                        break;
+                    }
+
+                    Thread.Sleep(toWait);
+                }
             }
 
             var elapsed = Timer.Elapsed;

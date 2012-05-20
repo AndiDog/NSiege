@@ -15,7 +15,8 @@ namespace NSiege
         private uint concurrency = 1;
 
         /// <summary>
-        /// Number of parallel threads to use. Defaults to 1.
+        /// Number of parallel threads to use. Defaults to 1. In the case of user simulation mode, this represents the
+        /// number of users.
         /// </summary>
         public uint Concurrency
         {
@@ -36,6 +37,14 @@ namespace NSiege
         /// </summary>
         public TimeSpan? MaxTimeToRun { get; set; }
 
+        private BenchmarkMode mode = BenchmarkMode.BENCHMARK;
+
+        public BenchmarkMode Mode
+        {
+            get { return mode; }
+            set { mode = value; }
+        }
+
         /// <summary>
         /// Number of executions to run altogether (number of threads does not matter here). Note that threads are not
         /// synchronized so the actual number of executions may be a bit higher. Setting is mutually exclusive with
@@ -51,6 +60,8 @@ namespace NSiege
         /// Note that the actual time might of course differ a bit.
         /// </remarks>
         public TimeSpan? TimeToRun { get; set; }
+
+        public Tuple<TimeSpan, TimeSpan> TimeToWaitBetweenTests { get; set; }
 
         public virtual void EnsureCorrectSettings()
         {
@@ -76,6 +87,10 @@ namespace NSiege
             if((TimeToRun == null) == (NumberOfExecutionsToRun == null))
                 throw new InvalidSettingsException("TimeToRun and NumberOfExecutionsToRun are mutually exclusive, exactly one must be NULL");
 
+            // TimeToWaitBetweenTests and benchmarking mode
+            if((TimeToWaitBetweenTests == null) == (Mode == BenchmarkMode.USER_SIMULATION))
+                throw new InvalidSettingsException("TimeToWaitBetweenTests and BenchmarkMode.BENCHMARK are mutually exclusive, exactly one must be NULL");
+
             // Values:
 
             if(MaxNumberOfExecutionsToRun != null && MaxNumberOfExecutionsToRun.Value <= 0)
@@ -83,6 +98,29 @@ namespace NSiege
 
             if(MaxTimeToRun != null && MaxTimeToRun.Value <= TimeSpan.Zero)
                 throw new InvalidSettingsException("MaxTimeToRun must be a positive time span");
+
+            if(TimeToWaitBetweenTests != null)
+            {
+                if(TimeToWaitBetweenTests.Item1.TotalMilliseconds < 0 ||
+                   TimeToWaitBetweenTests.Item2.TotalMilliseconds < 0)
+                    throw new InvalidSettingsException("TimeToWaitBetweenTests must consist of non-negative values");
+
+                if(TimeToWaitBetweenTests.Item1 > TimeToWaitBetweenTests.Item2)
+                    throw new InvalidSettingsException("Second time span in TimeToWaitBetweenTests must be larger " +
+                                                       "than the first one");
+            }
+        }
+
+        public void SetTimeToWaitBetweenTests(int millisecondsFixed)
+        {
+            var fixedTimespan = TimeSpan.FromMilliseconds(millisecondsFixed);
+            TimeToWaitBetweenTests = new Tuple<TimeSpan, TimeSpan>(fixedTimespan, fixedTimespan);
+        }
+
+        public void SetTimeToWaitBetweenTests(int millisecondsMin, int millisecondsMax)
+        {
+            TimeToWaitBetweenTests = new Tuple<TimeSpan, TimeSpan>(TimeSpan.FromMilliseconds(millisecondsMin),
+                                                                   TimeSpan.FromMilliseconds(millisecondsMax));
         }
     }
 }

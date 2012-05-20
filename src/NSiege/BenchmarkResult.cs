@@ -43,6 +43,9 @@ namespace NSiege
 
         private double? executionsPerSecond;
 
+        /// <summary>
+        /// Total executions per second summed up over all threads. Does not make sense in user simulation mode.
+        /// </summary>
         public double ExecutionsPerSecond
         {
             get
@@ -69,6 +72,8 @@ namespace NSiege
                 return Exception != null;
             }
         }
+
+        public BenchmarkMode Mode { get; set; }
 
         /// <summary>
         /// Optional name for the benchmark result.
