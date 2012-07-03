@@ -42,11 +42,11 @@ namespace NSiege
             return string.Format("[{0}] {1}", e.GetType().Name, e.Message);
         }
 
-        public virtual string GetBenchmarkDetailsString(bool useColors = false, bool debug = false)
+        public virtual string GetBenchmarkDetailsString(bool debug = false)
         {
             var writer = new StringWriter();
 
-            PrintBenchmarkDetailsImpl(useColors: useColors, debug: debug, writer: writer);
+            PrintBenchmarkDetailsImpl(useColors: false, debug: debug, writer: writer);
 
             return writer.GetString();
         }
