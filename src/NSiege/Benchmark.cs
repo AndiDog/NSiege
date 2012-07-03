@@ -42,7 +42,35 @@ namespace NSiege
             return string.Format("[{0}] {1}", e.GetType().Name, e.Message);
         }
 
+        public virtual string GetBenchmarkDetailsString(bool useColors = false, bool debug = false)
+        {
+            var writer = new StringWriter();
+
+            PrintBenchmarkDetailsImpl(useColors: useColors, debug: debug, writer: writer);
+
+            return writer.GetString();
+        }
+
+        public static string GetResultDetailsString(BenchmarkResult result, bool printThreadResults = false, TimePeriod periodForPerformanceDisplay = null, bool debug = false)
+        {
+            var writer = new StringWriter();
+
+            PrintResultDetailsImpl(result: result,
+                                   printThreadResults: printThreadResults,
+                                   useColors: false,
+                                   periodForPerformanceDisplay: periodForPerformanceDisplay,
+                                   debug: debug,
+                                   writer: writer);
+
+            return writer.GetString();
+        }
+
         public virtual void PrintBenchmarkDetails(bool useColors = false, bool debug = false)
+        {
+            PrintBenchmarkDetailsImpl(useColors: useColors, debug: debug, writer: new ConsoleWriter());
+        }
+
+        protected virtual void PrintBenchmarkDetailsImpl(bool useColors, bool debug, IWriter writer)
         {
             var foregroundColor = Console.ForegroundColor;
 
@@ -51,16 +79,16 @@ namespace NSiege
                 if(useColors)
                     Console.ForegroundColor = ConsoleColor.Cyan;
 
-                Console.WriteLine("Benchmark name: {0}", Name ?? "<no name assigned>");
+                writer.WriteLine("Benchmark name: {0}", Name ?? "<no name assigned>");
 
                 if(useColors)
                     Console.ForegroundColor = ConsoleColor.Yellow;
 
-                Console.WriteLine("Settings:");
+                writer.WriteLine("Settings:");
 
                 Console.ForegroundColor = foregroundColor;
 
-                PrintSettings();
+                PrintSettings(writer);
             }
             finally
             {
@@ -70,6 +98,16 @@ namespace NSiege
         }
 
         public static void PrintResultDetails(BenchmarkResult result, bool printThreadResults = false, bool useColors = false, TimePeriod periodForPerformanceDisplay = null, bool debug = false)
+        {
+            PrintResultDetailsImpl(result: result,
+                                   printThreadResults: printThreadResults,
+                                   useColors: false,
+                                   periodForPerformanceDisplay: periodForPerformanceDisplay,
+                                   debug: debug,
+                                   writer: new ConsoleWriter());
+        }
+
+        protected static void PrintResultDetailsImpl(BenchmarkResult result, bool printThreadResults, bool useColors, TimePeriod periodForPerformanceDisplay, bool debug, IWriter writer)
         {
             if(periodForPerformanceDisplay == null)
                 periodForPerformanceDisplay = TimePeriod.Second;
@@ -81,21 +119,21 @@ namespace NSiege
                 if(useColors)
                     Console.ForegroundColor = ConsoleColor.Cyan;
 
-                Console.WriteLine("Result: {0}", result.ResultName ?? "<no name assigned>");
-                Console.WriteLine("Mode: {0}", result.Mode.ToFriendlyString());
+                writer.WriteLine("Result: {0}", result.ResultName ?? "<no name assigned>");
+                writer.WriteLine("Mode: {0}", result.Mode.ToFriendlyString());
 
                 if(useColors)
                     Console.ForegroundColor = foregroundColor;
 
                 if(debug)
-                    Console.WriteLine("Test took {0}", result.CompleteElapsedTime);
+                    writer.WriteLine("Test took {0}", result.CompleteElapsedTime);
 
                 if(printThreadResults)
                 {
                     if(useColors)
                         Console.ForegroundColor = ConsoleColor.Yellow;
 
-                    Console.WriteLine("Single threads:");
+                    writer.WriteLine("Single threads:");
 
                     if(useColors)
                         Console.ForegroundColor = foregroundColor;
@@ -116,23 +154,23 @@ namespace NSiege
                         if(useColors)
                             Console.ForegroundColor = ConsoleColor.Yellow;
 
-                        Console.WriteLine("- Thread #{0}", i + 1);
+                        writer.WriteLine("- Thread #{0}", i + 1);
 
                         if(useColors)
                             Console.ForegroundColor = foregroundColor;
 
-                        Console.WriteLine("  Took {0}", result.ThreadResults[i].CompleteElapsedTime);
-                        Console.WriteLine("  Executed {0} times", result.ThreadResults[i].CompletedExecutions);
-                        Console.WriteLine("  {0:#.##} executions/{1}{2}",
+                        writer.WriteLine("  Took {0}", result.ThreadResults[i].CompleteElapsedTime);
+                        writer.WriteLine("  Executed {0} times", result.ThreadResults[i].CompletedExecutions);
+                        writer.WriteLine("  {0:#.##} executions/{1}{2}",
                                           executionsPerPeriod,
                                           periodForPerformanceDisplay.Name,
                                           result.Mode == BenchmarkMode.USER_SIMULATION
                                               ? " (user simulation mode: waiting time not considered)"
                                               : string.Empty);
-                        Console.WriteLine("  One execution took {0} in average", result.ThreadResults[i].AverageTimePerExecution);
+                        writer.WriteLine("  One execution took {0} in average", result.ThreadResults[i].AverageTimePerExecution);
 
                         if(debug)
-                            Console.WriteLine("  Stop reason {0}", result.ThreadResults[i].StopReason);
+                            writer.WriteLine("  Stop reason {0}", result.ThreadResults[i].StopReason);
 
                         if(result.ThreadResults[i].FirstUncountedException != null ||
                            (result.ExceptionMode == ExceptionMode.COUNT &&
@@ -141,18 +179,18 @@ namespace NSiege
                             if(useColors)
                                 Console.ForegroundColor = ConsoleColor.Red;
 
-                            Console.WriteLine("  Test execution led to an exception in this thread:");
+                            writer.WriteLine("  Test execution led to an exception in this thread:");
 
                             if(result.ThreadResults[i].FirstUncountedException != null)
-                                Console.WriteLine("  first uncounted: {0}",
-                                                  FormatException(result.ThreadResults[i].FirstUncountedException));
+                                writer.WriteLine("  first uncounted: {0}",
+                                                 FormatException(result.ThreadResults[i].FirstUncountedException));
                             if(result.ExceptionMode == ExceptionMode.COUNT &&
                                result.ThreadResults[i].FirstCountedException != null)
                             {
-                                Console.WriteLine("  first counted: {0}",
-                                                  FormatException(result.ThreadResults[i].FirstCountedException));
-                                Console.WriteLine("  number of counted exceptions: {0}",
-                                                  result.ThreadResults[i].ExceptionCount);
+                                writer.WriteLine("  first counted: {0}",
+                                                 FormatException(result.ThreadResults[i].FirstCountedException));
+                                writer.WriteLine("  number of counted exceptions: {0}",
+                                                 result.ThreadResults[i].ExceptionCount);
                             }
 
                             if(useColors)
@@ -170,14 +208,14 @@ namespace NSiege
                     if(useColors)
                         Console.ForegroundColor = ConsoleColor.Red;
 
-                    Console.WriteLine("Test execution led to an exception in at least one thread:");
+                    writer.WriteLine("Test execution led to an exception in at least one thread:");
 
                     if(result.FirstUncountedException != null)
-                        Console.WriteLine("  first uncounted: {0}", FormatException(result.FirstUncountedException));
+                        writer.WriteLine("  first uncounted: {0}", FormatException(result.FirstUncountedException));
                     if(result.ExceptionMode == ExceptionMode.COUNT && result.FirstCountedException != null)
                     {
-                        Console.WriteLine("  first counted: {0}", FormatException(result.FirstCountedException));
-                        Console.WriteLine("  total number of counted exceptions: {0}", result.ExceptionCount);
+                        writer.WriteLine("  first counted: {0}", FormatException(result.FirstCountedException));
+                        writer.WriteLine("  total number of counted exceptions: {0}", result.ExceptionCount);
                     }
 
                     return;
@@ -188,7 +226,7 @@ namespace NSiege
                 if(useColors)
                     Console.ForegroundColor = ConsoleColor.Magenta;
 
-                Console.WriteLine("Overall:");
+                writer.WriteLine("Overall:");
 
                 if(useColors)
                     Console.ForegroundColor = foregroundColor;
@@ -196,13 +234,13 @@ namespace NSiege
                 var averageTimeTaken = new TimeSpan(elapsedTimeSum.Ticks / result.ThreadResults.Length);
                 var executionsPerPeriodSum = executionsPerPeriodPerThread.Sum();
 
-                Console.WriteLine("  Each thread took {0} in average", averageTimeTaken);
-                Console.WriteLine("  Executed {0} times altogether", result.CompletedExecutions);
+                writer.WriteLine("  Each thread took {0} in average", averageTimeTaken);
+                writer.WriteLine("  Executed {0} times altogether", result.CompletedExecutions);
                 if(result.Mode == BenchmarkMode.BENCHMARK)
-                    Console.WriteLine("  {0:#.##} executions/{1}",
-                                      executionsPerPeriodSum,
-                                      periodForPerformanceDisplay.Name);
-                Console.WriteLine("  One execution took {0} in average", result.AverageTimePerExecution);
+                    writer.WriteLine("  {0:#.##} executions/{1}",
+                                     executionsPerPeriodSum,
+                                     periodForPerformanceDisplay.Name);
+                writer.WriteLine("  One execution took {0} in average", result.AverageTimePerExecution);
 
                 // If executions/second > 100000
                 if((executionsPerPeriodSum * periodForPerformanceDisplay.Duration.TotalSeconds) > 100000)
@@ -210,9 +248,9 @@ namespace NSiege
                     if(useColors)
                         Console.ForegroundColor = ConsoleColor.Red;
 
-                    Console.WriteLine("Warning: High number of executions/second. Note that NSiege should not be " +
-                                      "used for very short tests because the CPU time for the timing might create " +
-                                      "a bias.");
+                    writer.WriteLine("Warning: High number of executions/second. Note that NSiege should not be " +
+                                     "used for very short tests because the CPU time for the timing might create " +
+                                     "a bias.");
                 }
             }
             finally
@@ -222,22 +260,22 @@ namespace NSiege
             }
         }
 
-        protected virtual void PrintSettings()
+        protected virtual void PrintSettings(IWriter writer)
         {
-            Console.WriteLine("- Mode: {0}", Settings.Mode.ToFriendlyString());
-            Console.WriteLine("- Concurrency: {0}", Settings.Concurrency);
+            writer.WriteLine("- Mode: {0}", Settings.Mode.ToFriendlyString());
+            writer.WriteLine("- Concurrency: {0}", Settings.Concurrency);
 
             if(Settings.NumberOfExecutionsToRun != null)
-                Console.WriteLine("- Executing {0} times", Settings.NumberOfExecutionsToRun.Value);
+                writer.WriteLine("- Executing {0} times", Settings.NumberOfExecutionsToRun.Value);
 
             if(Settings.TimeToRun != null)
-                Console.WriteLine("- Running for {0}", Settings.TimeToRun.Value);
+                writer.WriteLine("- Running for {0}", Settings.TimeToRun.Value);
 
             if(Settings.MaxNumberOfExecutionsToRun != null)
-                Console.WriteLine("- Stopping after {0} executions", Settings.MaxNumberOfExecutionsToRun.Value);
+                writer.WriteLine("- Stopping after {0} executions", Settings.MaxNumberOfExecutionsToRun.Value);
 
             if(Settings.MaxTimeToRun != null)
-                Console.WriteLine("- Stopping after {0}", Settings.MaxTimeToRun.Value);
+                writer.WriteLine("- Stopping after {0}", Settings.MaxTimeToRun.Value);
         }
 
         /// <summary>
